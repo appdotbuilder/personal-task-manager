@@ -1,6 +1,26 @@
+import { db } from '../db';
+import { tasksTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
+
 export const deleteTask = async (id: number): Promise<void> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is deleting a task from the database by its ID.
-    // Should validate that the task exists before attempting deletion.
-    return Promise.resolve();
+  try {
+    // First check if the task exists
+    const existingTask = await db.select()
+      .from(tasksTable)
+      .where(eq(tasksTable.id, id))
+      .limit(1)
+      .execute();
+
+    if (existingTask.length === 0) {
+      throw new Error(`Task with id ${id} not found`);
+    }
+
+    // Delete the task
+    await db.delete(tasksTable)
+      .where(eq(tasksTable.id, id))
+      .execute();
+  } catch (error) {
+    console.error('Task deletion failed:', error);
+    throw error;
+  }
 };
